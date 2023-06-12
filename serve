@@ -1,0 +1,4 @@
+import subprocess
+cmd = 'python api.py'
+ret = subprocess.run(cmd, shell=True)
+print(ret)

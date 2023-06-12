@@ -1,0 +1,5 @@
+fastapi
+uvicorn
+bminf
+flagai
+torch==1.13.1
