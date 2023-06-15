@@ -33,9 +33,9 @@ async def create_item(request: Request):
     json_post = json.dumps(json_post_raw)
     print('json_post:',json_post)
     json_post_list = json.loads(json_post)
-    prompt = json_post_list.get('inputs')
-    max_length = json_post_list.get('max_length')
-    temperature = json_post_list.get('temperature')
+    prompt = json_post_list.get('inputs') 
+    max_length = json_post_list.get('max_length') if json_post_list.get('max_length') else 2000
+    temperature = json_post_list.get('temperature') if json_post_list.get('temperature') else 0
 
     from cyg_conversation import default_conversation
     conv = default_conversation.copy()
@@ -44,7 +44,8 @@ async def create_item(request: Request):
     tokens = tokenizer.encode_plus(f"{conv.get_prompt()}", None, max_length=None)['input_ids']
     tokens = tokens[1:-1]
     with torch.inference_mode():
-        response = aquila_generate(tokenizer, model, [prompt], max_gen_len:=200, top_p=0.95, prompts_tokens=[tokens])
+        response = aquila_generate(tokenizer, model, [prompt], max_gen_len=max_length, top_p=0.95,
+                    temperature = temperature, prompts_tokens=[tokens])
     now = datetime.datetime.now()
     time = now.strftime("%Y-%m-%d %H:%M:%S")
     answer = {
@@ -59,8 +60,8 @@ async def create_item(request: Request):
 
 
 if __name__ == '__main__':
-    state_dict = "./checkpoints_in/"
-    model_name = 'aquila-7b' # 'aquila-33b'
+    state_dict = "/opt/ml/model"
+    model_name = 'aquilachat-7b' # 'aquila-33b'
     print('start...')
     loader = AutoLoader(
         "lm",
