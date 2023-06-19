@@ -34,15 +34,20 @@ async def create_item(request: Request):
     print('json_post:',json_post)
     json_post_list = json.loads(json_post)
     prompt = json_post_list.get('inputs') 
+    history = json_post_list.get('history')
     max_length = json_post_list.get('max_length') if json_post_list.get('max_length') else 2000
     temperature = json_post_list.get('temperature') if json_post_list.get('temperature') else 0
 
     from cyg_conversation import default_conversation
     conv = default_conversation.copy()
+
+    for i,his in enumerate(history):
+        conv.append_message(conv.roles[i%2], his) ##0-human,1-bot
     conv.append_message(conv.roles[0], prompt)
     conv.append_message(conv.roles[1], None)
+
     tokens = tokenizer.encode_plus(f"{conv.get_prompt()}", None, max_length=None)['input_ids']
-    tokens = tokens[1:-1]
+    tokens = tokens[:-1]
     with torch.inference_mode():
         response = aquila_generate(tokenizer, model, [prompt], max_gen_len=max_length, top_p=0.95,
                     temperature = temperature, prompts_tokens=[tokens])
