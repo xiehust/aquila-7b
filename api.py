@@ -49,13 +49,13 @@ async def create_item(request: Request):
     from cyg_conversation import default_conversation
     conv = default_conversation.copy()
 
-    for i,his in enumerate(history):
-        conv.append_message(conv.roles[i%2], his) ##0-human,1-bot
+    # for i,his in enumerate(history):
+    #     conv.append_message(conv.roles[i%2], his) ##0-human,1-bot
     conv.append_message(conv.roles[0], prompt)
     conv.append_message(conv.roles[1], None)
-
+    print(conv.get_prompt())
     tokens = tokenizer.encode_plus(f"{conv.get_prompt()}", None, max_length=None)['input_ids']
-    tokens = tokens[:-1]
+    tokens = tokens[1:-1]
     with torch.inference_mode():
         response = aquila_generate(tokenizer, model, [prompt], max_gen_len=max_length, top_p=0.95,
                     temperature = temperature, prompts_tokens=[tokens])
