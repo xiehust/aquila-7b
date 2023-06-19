@@ -22,6 +22,14 @@ def torch_gc():
 
 app = FastAPI()
 
+def post_process(resp):
+    if '[UNK]' in resp:
+        resp = resp[:resp.find('[UNK]')]
+    if '###Assistant:' in resp:
+        resp = resp[resp.rfind('###Assistant:')+14:]
+    return resp
+
+
 @app.get("/ping")
 def ping():
     return {'status': 'Healthy'}
@@ -53,14 +61,19 @@ async def create_item(request: Request):
                     temperature = temperature, prompts_tokens=[tokens])
     now = datetime.datetime.now()
     time = now.strftime("%Y-%m-%d %H:%M:%S")
+    post_resp = response
+    try:
+        post_resp = post_process(response)
+    except Exception as e:
+        print(f'post_process error:{str(e)}')
     answer = {
-        "response": response,
+        "outputs": post_resp,
         "status": 200,
         "time": time
     }
-    log = "[" + time + "] " + '", prompt:"' + prompt + '", response:"' + repr(response) + '"'
+    log = "[" + time + "] " + ' prompt:"' + prompt + '", outputs:"' + repr(post_resp) + '"'
     print(log)
-    torch_gc()
+    # torch_gc()
     return answer
 
 
