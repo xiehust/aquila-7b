@@ -128,4 +128,9 @@ conv_templates = {
 
 
 if __name__ == "__main__":
-    print(default_conversation.get_prompt())
+    text = '北京为什么是中国的首都？'
+    conv = default_conversation.copy()
+    conv.append_message(conv.roles[0], text)
+    conv.append_message(conv.roles[1], None)
+    print(SeparatorStyle.SINGLE)
+    print(conv.get_prompt())
